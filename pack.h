@@ -16,4 +16,9 @@ typedef struct
 void pack_y(QUATRE_PIX_T *q_pix, uint8_t *y);
 
 void pack_uv(QUATRE_PIX_T *q_pix, uint8_t *u, uint8_t *v);
+
+void framecopy_I0AL_to_PP01(uint32_t width, uint32_t height, uint8_t *srcmem[], uint8_t *dstmem);
+
+size_t framesize_PP01(uint32_t width, uint32_t height);
+
 #endif

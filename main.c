@@ -15,8 +15,11 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 #include "pack.h"
+
+#define SSE 1
 
 #define MAX_WIDTH   7680
 #define MAX_HEIGHT  4320
@@ -75,12 +78,22 @@ int main(int argc, char *argv[])
  
     while ((rd_sz = read(ifd, img, wxh * 3)) == wxh * 3)
     {
+        #if (SSE)
+        uint8_t *srcmem[2] = { img, img + wxh * 2 }; // { Y, U, V }
+        uint8_t *dstmem = (uint8_t *) calloc(1, framesize_PP01(width, height));
+
+        framecopy_I0AL_to_PP01(width, height, srcmem, dstmem);
+
+        write(ofd, dstmem, framesize_PP01(width, height));
+        free(dstmem);
+        #else
         y = (uint64_t *) img;
-        u = (uint32_t *) ((uint8_t *) img + width * height * 2);
-        v = (uint32_t *) ((uint8_t *) img + width * height * 2 + width * height * 2 / 4);
+        u = (uint32_t *) ((uint8_t *) img + wxh * 2);
+        v = (uint32_t *) ((uint8_t *) img + wxh * 2 + wxh * 2 / 4);
 
         // Y
-        QUATRE_PIX_T *py = calloc(1, width * height / 4 * sizeof(QUATRE_PIX_T));
+        QUATRE_PIX_T *py = calloc(1, wxh / 4 * sizeof(QUATRE_PIX_T));
+
         QUATRE_PIX_T *p = py;
         for (i = 0; i < height; i++)
         {
@@ -96,11 +109,11 @@ int main(int argc, char *argv[])
                 p++;
             }
         }
-        write(ofd, py, width * height / 4 * sizeof(QUATRE_PIX_T));
+        write(ofd, py, wxh / 4 * sizeof(QUATRE_PIX_T));
         free(py);
         
         // U, V
-        QUATRE_PIX_T *quv = calloc(1, width * height / 2 / 4 * sizeof(QUATRE_PIX_T));
+        QUATRE_PIX_T *quv = calloc(1, wxh / 2 / 4 * sizeof(QUATRE_PIX_T));
         QUATRE_PIX_T *q = quv;
         for (i = 0; i < height / 2; i++)
         {
@@ -122,8 +135,9 @@ int main(int argc, char *argv[])
                 q++;
             }
         }
-        write(ofd, quv, width * height / 2 / 4 * sizeof(QUATRE_PIX_T));
+        write(ofd, quv, wxh / 2 / 4 * sizeof(QUATRE_PIX_T));
         free(quv);
+        #endif
         
         fprintf(stderr, "Frame %d completed.\n", count);
         count++;
