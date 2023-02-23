@@ -10,10 +10,10 @@
 typedef struct
 {
     uint8_t data[5];
-} quatre_pixel;
+} QUATRE_PIX_T;
 
 
-void pack_y(quatre_pixel *q_pix, uint8_t *y);
+void pack_y(QUATRE_PIX_T *q_pix, uint8_t *y);
 
-void pack_uv(quatre_pixel *q_pix, uint8_t *u, uint8_t *v);
+void pack_uv(QUATRE_PIX_T *q_pix, uint8_t *u, uint8_t *v);
 #endif

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     uint64_t *y;
     uint32_t *u;
     uint32_t *v;
-    quatre_pixel q_pix;
+    QUATRE_PIX_T q_pix;
     int ifd, ofd;
 
     int width;
@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
         v = (uint32_t *) ((uint8_t *) img + width * height * 2 + width * height * 2 / 4);
 
         // Y
-        quatre_pixel *py = malloc(width * height / 4 * sizeof(quatre_pixel));
-        quatre_pixel *p = py;
+        QUATRE_PIX_T *py = calloc(1, width * height / 4 * sizeof(QUATRE_PIX_T));
+        QUATRE_PIX_T *p = py;
         for (i = 0; i < height; i++)
         {
             for (j = 0; j < width / 4; j++) // 4 horizantal pixel at a time
@@ -90,18 +90,18 @@ int main(int argc, char *argv[])
 
                 pack_y(&q_pix, (uint8_t *) y);
 
-                memcpy(p, &q_pix, sizeof(quatre_pixel));
+                memcpy(p, &q_pix, sizeof(QUATRE_PIX_T));
 
                 y++;
                 p++;
             }
         }
-        write(ofd, py, width * height / 4 * sizeof(quatre_pixel));
+        write(ofd, py, width * height / 4 * sizeof(QUATRE_PIX_T));
         free(py);
         
         // U, V
-        quatre_pixel *quv = malloc(width * height / 2 / 4 * sizeof(quatre_pixel));
-        quatre_pixel *q = quv;
+        QUATRE_PIX_T *quv = calloc(1, width * height / 2 / 4 * sizeof(QUATRE_PIX_T));
+        QUATRE_PIX_T *q = quv;
         for (i = 0; i < height / 2; i++)
         {
             for (j = 0; j < width / 4; j++) // 2 horizontal pixel at a time
@@ -115,14 +115,14 @@ int main(int argc, char *argv[])
                     (uint8_t *) v
                 );
 
-                memcpy(q, &q_pix, sizeof(quatre_pixel));
+                memcpy(q, &q_pix, sizeof(QUATRE_PIX_T));
 
                 u++;
                 v++;
                 q++;
             }
         }
-        write(ofd, quv, width * height / 2 / 4 * sizeof(quatre_pixel));
+        write(ofd, quv, width * height / 2 / 4 * sizeof(QUATRE_PIX_T));
         free(quv);
         
         fprintf(stderr, "Frame %d completed.\n", count);
